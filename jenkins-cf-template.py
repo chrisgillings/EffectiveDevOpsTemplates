@@ -89,7 +89,7 @@ ud = Base64(Join('\n', [
     "yum install --enablerepo=epel -y git",
     "pip install ansible",
     AnsiblePullCmd,
-    "echo '*/10 * * * * {}' > /etc/cron.d/ansible-pull".format(AnsiblePullCmd)
+    "echo '*/10 * * * * root {}' > /etc/cron.d/ansible-pull".format(AnsiblePullCmd)
 ]))
 
 t.add_resource(Role(
@@ -108,6 +108,18 @@ t.add_resource(Role(
 t.add_resource(InstanceProfile(
     "InstanceProfile",
     Path="/",
+    Roles=[Ref("Role")]
+))
+
+t.add_resource(IAMPolicy("Policy",
+    PolicyName="AllowCodePipeline",
+    PolicyDocument=Policy(
+        Statement=[
+            Statement(Effect=Allow,
+                Action=[Action("codepipeline", "*")],
+                Resource=["*"])
+        ]
+    ),
     Roles=[Ref("Role")]
 ))
 
